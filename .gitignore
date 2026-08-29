@@ -2,8 +2,6 @@
 node_modules/
 
 # Env files (never commit secrets)
-.env
-.env.local
 .env.*.local
 
 # Backend build output
@@ -21,8 +19,8 @@ npm-debug.log*
 
 # OS / editor
 .DS_Store
-.vscode/
 .idea/
 
 # Test coverage
 coverage/
+config.bat

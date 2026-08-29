@@ -5,9 +5,9 @@
   "description": "Inventory Management Platform - POS integration backend (Square + Toast)",
   "main": "dist/index.js",
   "scripts": {
-    "dev": "nodemon --watch src --ext ts --exec ts-node src/index.ts",
+    "dev": "node api.js && nodemon --watch src --ext ts --exec ts-node src/index.ts",
     "build": "tsc -p tsconfig.build.json",
-    "start": "node dist/index.js",
+    "start": "node api.js && node dist/index.js",
     "seed": "ts-node src/seed/seed.ts",
     "square:test-sale": "ts-node scripts/square-test-sale.ts",
     "test": "jest --runInBand",

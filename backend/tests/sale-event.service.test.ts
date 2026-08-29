@@ -98,6 +98,28 @@ describe('processSaleEvent — unmapped POS product', () => {
   });
 });
 
+describe('processSaleEvent — concurrent delivery of the same event', () => {
+  it('decrements only once even if the same idempotency key arrives concurrently (e.g. Square delivering the same order webhook more than once)', async () => {
+    await seedCokeWithAllocation(100, 50);
+
+    const results = await Promise.allSettled([
+      processSaleEvent(saleEvent(), 'webhook'),
+      processSaleEvent(saleEvent(), 'webhook'),
+      processSaleEvent(saleEvent(), 'webhook'),
+    ]);
+
+    const statuses = results.map((r) => (r.status === 'fulfilled' ? r.value.status : 'rejected'));
+    expect(statuses.filter((s) => s === 'processed')).toHaveLength(1);
+    expect(statuses.filter((s) => s === 'duplicate')).toHaveLength(2);
+
+    const product = await Product.findOne({ sku: 'COKE-001' });
+    expect(product?.quantity).toBe(98); // decremented exactly once, not 3x
+
+    const count = await InventoryTransaction.countDocuments({ idempotencyKey: 'square:sale_123' });
+    expect(count).toBe(1);
+  });
+});
+
 describe('processSaleEvent — concurrent sales on low stock', () => {
   it('allows only as many concurrent sales as stock permits, never going negative', async () => {
     await seedCokeWithAllocation(2, 2);
